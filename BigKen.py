@@ -6,10 +6,19 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 def start(bot, update):
-    update.message.reply_text('Hi! Use /set <seconds> to set a timer')
+    update.message.reply_text("YES YES YES BOYS")
 
-def alarm(bot, job):
-    bot.send_message(job.context, text = "Please water me, i'm very thirsty!")
+def help(bot, update):
+    update.message.reply_text("/set + time in seconds to create an alarm. " +
+                              "\n /weather - lets you know what the weather will be like tomorrow")
+
+
+def alarm(bot, job, message = "Someone please water me!"):
+    bot.send_message(job.context, text = message)
+
+
+def sendWeatherMessage(bot, update):
+    update.message.reply_text("Hi Guys, the weather tomorrow looks pretty great!")
 
 
 def set_timer(bot, update, args, job_queue, chat_data):
@@ -21,6 +30,7 @@ def set_timer(bot, update, args, job_queue, chat_data):
         if due < 0:
             update.message.reply_text('Sorry we can not go back to future!')
             return
+
 
         # Add job to queue
         job = job_queue.run_once(alarm, due, context=chat_id)
@@ -59,13 +69,13 @@ def main():
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("help", start))
+    dp.add_handler(CommandHandler("weather", sendWeatherMessage))
+    dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("set", set_timer,
                                   pass_args=True,
                                   pass_job_queue=True,
                                   pass_chat_data=True))
     dp.add_handler(CommandHandler("unset", unset, pass_chat_data=True))
-
     # log all errors
     dp.add_error_handler(error)
 
