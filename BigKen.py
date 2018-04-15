@@ -26,25 +26,42 @@ def alarm(bot, job, message = "Someone please water me!"):
     logger.info("Called alarm")
     bot.send_message(job.context, text = message)
 
+def tempReply(bot, update, temp, tempMin, tempMax):
+    if temp < 0:
+        message = "Fuck it's cold boys"
+    elif temp < 5:
+        message = "It's might chilly boys"
+    elif temp < 10:
+        message = "A wee bit nippy"
+    elif temp < 15:
+        message = "Not too bad"
+    else:
+        message = "Taps-aff"
+    message += ' ({})'.format(temp)
+    update.message.reply_text(message)
+
 
 def sendWeatherMessage(bot, update, args, arguments):
-    kToC = -273.00
+    kToC = -273
     logger.info("Sending weather message")
     req = requests.get("http://{}/data/2.5/weather".format(config['openweather']['weather_url']), params={'lat': config['lat'], 'lon': config['lon'], 'APPID': config['openweather']['api_key']})
+    temp = int(req.json().get("main").get("temp") + kToC)
+    tempMin, tempMax = int((req.json().get("main").get("temp_min")) + kToC), int((req.json().get("main").get("temp_max")) + kToC)
     try:
         type = args[0]
         if type == "temp":
-            temp = (req.json().get("main").get("temp") + kToC)
-            tempMin, tempMax = ((req.json().get("main").get("temp_min")) + kToC), ((req.json().get("main").get("temp_max")) + kToC)
-            update.message.reply_text("Hi Guys, the temperature is " + str(int(temp)) + " with a minimum of " + str(int(tempMin)) +
-                                      " and max of " + str(int(tempMax)) + ".")
+            tempReply(bot, update, temp, tempMin, tempMax)
         elif type == "cond":
-            weather_description = req.json().get("weather")[0].get("description")
-            update.message.reply_text("Outside is " + weather_description)
+            update.message.reply_text("Outside is {}".format(req.json()['weather'][0]['description']))
+        else:
+            update.message.reply_text("Go outside and take a look")
 
     except (IndexError, ValueError):
         update.message.reply_text('Usage: /weather temp -- current temp with min and max' +
                                   "\n /weather cond -- raining etc")
+    except Exception as e:
+        logger.error("Something went wrong while getting the weather")
+        print(e)
 
 def set_timer(bot, update, args, job_queue, chat_data):
     logger.info("Called set_timer")
