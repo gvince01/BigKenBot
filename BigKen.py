@@ -1,29 +1,32 @@
 from telegram.ext import Updater, CommandHandler
-import logging, requests
-
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-
-logger = logging.getLogger(__name__)
+import logging
+import requests
+import argparse
 
 def start(bot, update):
+    logger.info("Called start")
     update.message.reply_text("YES YES YES BOYS")
 
 def help(bot, update):
+    logger.info("Called help")
     update.message.reply_text("/set + time in seconds to create an alarm. " +
                               "\n /weather - lets you know what the weather will be like tomorrow")
 
 
 def alarm(bot, job, message = "Someone please water me!"):
+    logger.info("Called alarm")
     bot.send_message(job.context, text = message)
 
 
 def sendWeatherMessage(bot, update):
+    logger.info("Sending weather message")
     responce = requests.get("http://api.openweathermap.org/data/2.5/weather?q=London&APPID=8284bc8e06adb8cf477f720efaf4b874")
     print(responce.json())
     update.message.reply_text("Hi Guys, the weather tomorrow looks pretty great!")
 
 
 def set_timer(bot, update, args, job_queue, chat_data):
+    logger.info("Called set_timer")
     """Add a job to the queue."""
     chat_id = update.message.chat_id
     try:
@@ -45,6 +48,7 @@ def set_timer(bot, update, args, job_queue, chat_data):
 
 
 def unset(bot, update, chat_data):
+    logger.info("Called unset")
     """Remove the job if the user changed their mind."""
     if 'job' not in chat_data:
         update.message.reply_text('You have no active timer')
@@ -63,6 +67,7 @@ def error(bot, update, error):
 
 
 def main():
+
     """Run bot."""
     updater = Updater("533272578:AAHNYd_93CxMfnzyNOA5SuRG_14NyaItHjY")
 
@@ -91,4 +96,19 @@ def main():
 
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--debug", action='store_true', help='Debug')
+
+    args = parser.parse_args()
+
+    if args.debug:
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
+
+    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=level)
+    logger = logging.getLogger('bigken')
+
     main()
