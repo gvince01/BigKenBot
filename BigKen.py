@@ -2,6 +2,9 @@ from telegram.ext import Updater, CommandHandler
 import logging
 import requests
 import argparse
+import yaml
+import sys
+import os
 
 def start(bot, update):
     logger.info("Called start")
@@ -19,9 +22,12 @@ def alarm(bot, job, message = "Someone please water me!"):
 
 
 def sendWeatherMessage(bot, update):
+    weather_url = "api.openweathermap.org"
+    weather_api_key = "8284bc8e06adb8cf477f720efaf4b874"
     logger.info("Sending weather message")
-    responce = requests.get("http://api.openweathermap.org/data/2.5/weather?q=London&APPID=8284bc8e06adb8cf477f720efaf4b874")
-    print(responce.json())
+    req = requests.get("http://{}/data/2.5/weather".format(weather_url), params={'q': 'London', 'APPID': weather_api_key})
+    print(req.json())
+
     update.message.reply_text("Hi Guys, the weather tomorrow looks pretty great!")
 
 
@@ -66,13 +72,14 @@ def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"', update, error)
 
 
-def main():
+def main(config):
 
     """Run bot."""
-    updater = Updater("533272578:AAHNYd_93CxMfnzyNOA5SuRG_14NyaItHjY")
+    updater = Updater(config['telegram']['api_key'])
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
+    bot = dp.bot
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
@@ -100,8 +107,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--debug", action='store_true', help='Debug')
+    parser.add_argument("--config", help="Config file to read", default='config.yaml')
 
     args = parser.parse_args()
+
+    if os.path.exists(args.config):
+        with open(args.config, 'r') as ymlfile:
+            config = yaml.load(ymlfile)
+    else:
+        logger.error("Couldn't find config file at {}".format(args.config))
+        sys.exit(1)
 
     if args.debug:
         level = logging.DEBUG
@@ -111,4 +126,4 @@ if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=level)
     logger = logging.getLogger('bigken')
 
-    main()
+    main(config)
