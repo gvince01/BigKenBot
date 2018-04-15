@@ -22,18 +22,26 @@ def alarm(bot, job, message = "Someone please water me!"):
     bot.send_message(job.context, text = message)
 
 
-def sendWeatherMessage(bot, update):
+def sendWeatherMessage(bot, update, args):
     kToC = -273.00
     weather_url = "api.openweathermap.org"
     weather_api_key = "8284bc8e06adb8cf477f720efaf4b874"
     logger.info("Sending weather message")
     req = requests.get("http://{}/data/2.5/weather".format(weather_url), params={'q': 'London', 'APPID': weather_api_key})
-    temp = (req.json().get("main").get("temp") + kToC)
-    tempMin = ((req.json().get("main").get("temp_min")) + kToC)
-    tempMax = ((req.json().get("main").get("temp_max")) + kToC)
-    update.message.reply_text("Hi Guys, the temperature is " + str(int(temp)) + " with a minimum of " + str(int(tempMin)) +
-                              " and max of "+ str(int(tempMax))) + "."
+    try:
+        type = args[0]
+        if type == "temp":
+            temp = (req.json().get("main").get("temp") + kToC)
+            tempMin, tempMax = ((req.json().get("main").get("temp_min")) + kToC), ((req.json().get("main").get("temp_max")) + kToC)
+            update.message.reply_text("Hi Guys, the temperature is " + str(int(temp)) + " with a minimum of " + str(int(tempMin)) +
+                                      " and max of " + str(int(tempMax)) + ".")
+        elif type == "cond":
+            weather_description = req.json().get("weather")[0].get("description")
+            update.message.reply_text("Outside is " + weather_description)
 
+    except (IndexError, ValueError):
+        update.message.reply_text('Usage: /weather temp -- current temp with min and max' +
+                                  "\n /weather cond -- raining etc")
 
 def set_timer(bot, update, args, job_queue, chat_data):
     logger.info("Called set_timer")
@@ -87,7 +95,7 @@ def main(config):
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("weather", sendWeatherMessage))
+    dp.add_handler(CommandHandler("weather", sendWeatherMessage, pass_args=True))
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("set", set_timer,
                                   pass_args=True,
@@ -116,7 +124,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     logger = logging.getLogger('bigken')
-
 
     if os.path.exists(args.config):
         with open(args.config, 'r') as ymlfile:
