@@ -1,5 +1,5 @@
 from telegram.ext import Updater, CommandHandler
-import logging
+import logging, requests
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -18,6 +18,8 @@ def alarm(bot, job, message = "Someone please water me!"):
 
 
 def sendWeatherMessage(bot, update):
+    responce = requests.get("http://api.openweathermap.org/data/2.5/weather?q=London&APPID=8284bc8e06adb8cf477f720efaf4b874")
+    print(responce.json())
     update.message.reply_text("Hi Guys, the weather tomorrow looks pretty great!")
 
 
