@@ -1,29 +1,38 @@
 from telegram.ext import Updater, CommandHandler
-import logging, requests
-
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-
-logger = logging.getLogger(__name__)
+import logging
+import requests
+import argparse
+import yaml
+import sys
+import os
 
 def start(bot, update):
+    logger.info("Called start")
     update.message.reply_text("YES YES YES BOYS")
 
 def help(bot, update):
+    logger.info("Called help")
     update.message.reply_text("/set + time in seconds to create an alarm. " +
                               "\n /weather - lets you know what the weather will be like tomorrow")
 
 
 def alarm(bot, job, message = "Someone please water me!"):
+    logger.info("Called alarm")
     bot.send_message(job.context, text = message)
 
 
 def sendWeatherMessage(bot, update):
-    responce = requests.get("http://api.openweathermap.org/data/2.5/weather?q=London&APPID=8284bc8e06adb8cf477f720efaf4b874")
-    print(responce.json())
+    weather_url = "api.openweathermap.org"
+    weather_api_key = "8284bc8e06adb8cf477f720efaf4b874"
+    logger.info("Sending weather message")
+    req = requests.get("http://{}/data/2.5/weather".format(weather_url), params={'q': 'London', 'APPID': weather_api_key})
+    print(req.json())
+
     update.message.reply_text("Hi Guys, the weather tomorrow looks pretty great!")
 
 
 def set_timer(bot, update, args, job_queue, chat_data):
+    logger.info("Called set_timer")
     """Add a job to the queue."""
     chat_id = update.message.chat_id
     try:
@@ -45,6 +54,7 @@ def set_timer(bot, update, args, job_queue, chat_data):
 
 
 def unset(bot, update, chat_data):
+    logger.info("Called unset")
     """Remove the job if the user changed their mind."""
     if 'job' not in chat_data:
         update.message.reply_text('You have no active timer')
@@ -62,12 +72,14 @@ def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"', update, error)
 
 
-def main():
+def main(config):
+
     """Run bot."""
-    updater = Updater("533272578:AAHNYd_93CxMfnzyNOA5SuRG_14NyaItHjY")
+    updater = Updater(config['telegram']['api_key'])
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
+    bot = dp.bot
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
@@ -91,4 +103,27 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--debug", action='store_true', help='Debug')
+    parser.add_argument("--config", help="Config file to read", default='config.yaml')
+
+    args = parser.parse_args()
+
+    if os.path.exists(args.config):
+        with open(args.config, 'r') as ymlfile:
+            config = yaml.load(ymlfile)
+    else:
+        logger.error("Couldn't find config file at {}".format(args.config))
+        sys.exit(1)
+
+    if args.debug:
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
+
+    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=level)
+    logger = logging.getLogger('bigken')
+
+    main(config)
