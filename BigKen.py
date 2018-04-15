@@ -1,4 +1,5 @@
-from telegram.ext import Updater, CommandHandler
+#!/usr/bin/env python3
+
 import logging
 import requests
 import argparse
@@ -6,6 +7,10 @@ import yaml
 import sys
 import os
 import json
+
+from telegram.ext import Updater, CommandHandler
+from handler import ArgumentHandler
+
 
 def start(bot, update):
     logger.info("Called start")
@@ -22,12 +27,10 @@ def alarm(bot, job, message = "Someone please water me!"):
     bot.send_message(job.context, text = message)
 
 
-def sendWeatherMessage(bot, update, args):
+def sendWeatherMessage(bot, update, args, arguments):
     kToC = -273.00
-    weather_url = "api.openweathermap.org"
-    weather_api_key = "8284bc8e06adb8cf477f720efaf4b874"
     logger.info("Sending weather message")
-    req = requests.get("http://{}/data/2.5/weather".format(weather_url), params={'q': 'London', 'APPID': weather_api_key})
+    req = requests.get("http://{}/data/2.5/weather".format(config['openweather']['weather_url']), params={'lat': config['lat'], 'lon': config['lon'], 'APPID': config['openweather']['api_key']})
     try:
         type = args[0]
         if type == "temp":
@@ -91,17 +94,18 @@ def main(config):
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
-    bot = dp.bot
+    dp.chat_data = config
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("weather", sendWeatherMessage, pass_args=True))
+    dp.add_handler(ArgumentHandler("weather", sendWeatherMessage, pass_args=True, arguments=config))
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("set", set_timer,
                                   pass_args=True,
                                   pass_job_queue=True,
                                   pass_chat_data=True))
     dp.add_handler(CommandHandler("unset", unset, pass_chat_data=True))
+
     # log all errors
     dp.add_error_handler(error)
 
@@ -123,7 +127,13 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    if args.debug:
+        level = logging.DEBUG
+    else:
+        level = logging.INFO
+
     logger = logging.getLogger('bigken')
+    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=level)
 
     if os.path.exists(args.config):
         with open(args.config, 'r') as ymlfile:
@@ -131,12 +141,5 @@ if __name__ == '__main__':
     else:
         logger.error("Couldn't find config file at {}".format(args.config))
         sys.exit(1)
-
-    if args.debug:
-        level = logging.DEBUG
-    else:
-        level = logging.INFO
-
-    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=level)
 
     main(config)
