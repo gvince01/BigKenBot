@@ -17,31 +17,34 @@ def start(bot, update):
 
 def help(bot, update):
     logger.info("Called help")
-    update.message.reply_text("/set + time in seconds to create an alarm. " +
-                              "\n /weather - lets you know what the weather will be like tomorrow")
+    update.message.reply_text("The commands I currently support are the following:" +
+                                "\n /set <mintues> creates an alarm. " +
+                                "\n /unset - deletes the alarm" +
+                                "\n /weather - lets you know what the weather will be like tomorrow + % chance of rain" +
+                                "\n /weather temp - tells you the current temperature")
 
 
-def alarm(bot, job, message = "Someone please water me!"):
+def alarm(bot, job, message = "THE TIME IS UP!!!"):
     logger.info("Called alarm")
     bot.send_message(job.context, text = message)
 
-def tempReply(bot, update, temp):
-    if temp < 0:
+
+def tempReply(bot, update, temperature):
+    if temperature < 0:
         message = "Fuck it's cold boys"
-    elif temp < 5:
+    elif temperature < 5:
         message = "It's might chilly boys"
-    elif temp < 10:
+    elif temperature < 10:
         message = "A wee bit nippy"
-    elif temp < 15:
+    elif temperature < 15:
         message = "Not too bad"
     else:
         message = "Taps-aff"
-    message += ' ({})'.format(temp)
+    message += ' ({})'.format(temperature)
     update.message.reply_text(message)
 
 
 def weatherDarkSky(bot, update, args, arguments):
-    kToC = -273
     logger.info("Sending weather message")
     req = requests.get("https://api.darksky.net/forecast/{}/{},{}".format(config['darksky']['api_key'], config['lat'], config['lon']))
     temp = int((req.json()['currently']['temperature'] - 32) * 5/9) #maybe put this in a function
@@ -69,8 +72,6 @@ def set_timer(bot, update, args, job_queue, chat_data):
         if due < 0:
             update.message.reply_text('Sorry we can not go back to future!')
             return
-
-
         # Add job to queue
         job = job_queue.run_once(alarm, due, context=chat_id)
         chat_data['job'] = job
@@ -100,8 +101,11 @@ def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"', update, error)
 
 
-def main(config):
+def strudel(bot, update, job_queue, chat_data): #custom message needs to be set
+    strudel_time = ["45"]
+    set_timer(bot, update, strudel_time, job_queue, chat_data)
 
+def main(config):
     """Run bot."""
     updater = Updater(config['telegram']['api_key'])
 
@@ -115,6 +119,10 @@ def main(config):
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("set", set_timer,
                                   pass_args=True,
+                                  pass_job_queue=True,
+                                  pass_chat_data=True
+                                  ))
+    dp.add_handler(CommandHandler("strudel", strudel,
                                   pass_job_queue=True,
                                   pass_chat_data=True
                                   ))
