@@ -65,7 +65,7 @@ def set_timer(bot, update, args, job_queue, chat_data):
     chat_id = update.message.chat_id
     try:
         # args[0] should contain the time for the timer in seconds
-        due = int(args[0])
+        due = int(args[0] * 60)
         if due < 0:
             update.message.reply_text('Sorry we can not go back to future!')
             return
@@ -78,7 +78,7 @@ def set_timer(bot, update, args, job_queue, chat_data):
         update.message.reply_text('Timer successfully set!')
 
     except (IndexError, ValueError):
-        update.message.reply_text('Usage: /set <seconds>')
+        update.message.reply_text('Usage: /set <minutes>')
 
 
 def unset(bot, update, chat_data):
@@ -107,7 +107,7 @@ def main(config):
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
-    dp.chat_data = config
+    # dp.chat_data = config #breaks /set
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
@@ -116,7 +116,8 @@ def main(config):
     dp.add_handler(CommandHandler("set", set_timer,
                                   pass_args=True,
                                   pass_job_queue=True,
-                                  pass_chat_data=True))
+                                  pass_chat_data=True
+                                  ))
     dp.add_handler(CommandHandler("unset", unset, pass_chat_data=True))
 
     # log all errors
