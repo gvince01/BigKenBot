@@ -6,7 +6,6 @@ import argparse
 import yaml
 import sys
 import os
-import json
 
 from telegram.ext import Updater, CommandHandler
 from handler import ArgumentHandler
@@ -26,7 +25,7 @@ def alarm(bot, job, message = "Someone please water me!"):
     logger.info("Called alarm")
     bot.send_message(job.context, text = message)
 
-def tempReply(bot, update, temp, tempMin, tempMax):
+def tempReply(bot, update, temp):
     if temp < 0:
         message = "Fuck it's cold boys"
     elif temp < 5:
@@ -41,27 +40,24 @@ def tempReply(bot, update, temp, tempMin, tempMax):
     update.message.reply_text(message)
 
 
-def sendWeatherMessage(bot, update, args, arguments):
+def weatherDarkSky(bot, update, args, arguments):
     kToC = -273
     logger.info("Sending weather message")
-    req = requests.get("http://{}/data/2.5/weather".format(config['openweather']['weather_url']), params={'lat': config['lat'], 'lon': config['lon'], 'APPID': config['openweather']['api_key']})
-    temp = int(req.json().get("main").get("temp") + kToC)
-    tempMin, tempMax = int((req.json().get("main").get("temp_min")) + kToC), int((req.json().get("main").get("temp_max")) + kToC)
+    req = requests.get("https://api.darksky.net/forecast/{}/{},{}".format(config['darksky']['api_key'], config['lat'], config['lon']))
+    temp = int((req.json()['currently']['temperature'] - 32) * 5/9) #maybe put this in a function
+    hourlySummary = req.json()['hourly']['summary']
+    hourlySummary += " {}% chance of rain.".format(req.json()['hourly']['data'][0]['precipProbability'] * 100)
     try:
-        type = args[0]
-        if type == "temp":
-            tempReply(bot, update, temp, tempMin, tempMax)
-        elif type == "cond":
-            update.message.reply_text("Outside is {}".format(req.json()['weather'][0]['description']))
+        if not args:
+            update.message.reply_text(hourlySummary)
+        elif args[0] == "temp":
+            tempReply(bot, update, temp)
         else:
             update.message.reply_text("Go outside and take a look")
-
-    except (IndexError, ValueError):
-        update.message.reply_text('Usage: /weather temp -- current temp with min and max' +
-                                  "\n /weather cond -- raining etc")
     except Exception as e:
         logger.error("Something went wrong while getting the weather")
         print(e)
+
 
 def set_timer(bot, update, args, job_queue, chat_data):
     logger.info("Called set_timer")
@@ -115,7 +111,7 @@ def main(config):
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(ArgumentHandler("weather", sendWeatherMessage, pass_args=True, arguments=config))
+    dp.add_handler(ArgumentHandler("weather", weatherDarkSky, pass_args=True, arguments=config))
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("set", set_timer,
                                   pass_args=True,
