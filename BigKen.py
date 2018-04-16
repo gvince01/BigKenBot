@@ -53,8 +53,8 @@ def weatherDarkSky(bot, update, args, arguments):
     logger.info("Sending weather message")
     req = requests.get("https://api.darksky.net/forecast/{}/{},{}".format(config['darksky']['api_key'], config['lat'], config['lon']))
     temp = int((req.json()['currently']['temperature'] - 32) * 5/9) #maybe put this in a function
-    hourlySummary = req.json()['hourly']['summary']
-    hourlySummary += " {}% chance of rain.".format(req.json()['hourly']['data'][0]['precipProbability'] * 100)
+    hourlySummary = req.json()['minutely']['summary']
+    hourlySummary += " {}% chance of rain.".format(req.json()['minutely']['data'][0]['precipProbability'] * 100)
     try:
         if not args:
             update.message.reply_text(hourlySummary)
