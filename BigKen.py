@@ -17,11 +17,13 @@ def start(bot, update):
 
 def help(bot, update):
     logger.info("Called help")
-    update.message.reply_text("The commands I currently support are the following:" +
-                                "\n /set <mintues> creates an alarm. " +
-                                "\n /unset - deletes the alarm" +
-                                "\n /weather - lets you know what the weather will be like tomorrow + % chance of rain" +
-                                "\n /weather temp - tells you the current temperature")
+    update.message.reply_text("The commands I currently support are the following:"
+                                "\n /set <mintues> creates an alarm. "
+                                "\n /unset - deletes the alarm"
+                                "\n /weather - lets you know what the weather will be like tomorrow + % chance of rain"
+                                "\n /weather temp - tells you the current temperature"
+                                "\n /tube status of all underground tube lines"
+                                "\n /strudel to set a strudel timer")
 
 
 def alarm(bot, job, message = "THE TIME IS UP!!!"):
@@ -30,6 +32,7 @@ def alarm(bot, job, message = "THE TIME IS UP!!!"):
 
 
 def tempReply(bot, update, temperature):
+    logger.info("Called tempReply")
     if temperature < 0:
         message = "Fuck it's cold boys"
     elif temperature < 5:
@@ -106,7 +109,8 @@ def strudel(bot, update, job_queue, chat_data): #custom message needs to be set
     set_timer(bot, update, strudel_time, job_queue, chat_data)
 
 
-def tfllinestatus(bot, update, args, arguments):
+def tflLineStatus(bot, update, args, arguments):
+    logger.info("Called TFL Line Status")
     req = requests.get("https://api.tfl.gov.uk/Line/Mode/tube/Status?app_id={}&app_key={}".format(config['tfl']['app_id'],config['tfl']['api_key']))
     stringPrinter = ""
     for i in range(0, 10):
@@ -121,13 +125,12 @@ def main(config):
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
-    # dp.chat_data = config #breaks /set
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(ArgumentHandler("weather", weatherDarkSky, pass_args=True, arguments=config))
     dp.add_handler(CommandHandler("help", help))
-    dp.add_handler(ArgumentHandler("tube", tfllinestatus, pass_args=True, arguments=config))
+    dp.add_handler(ArgumentHandler("tube", tflLineStatus, pass_args=True, arguments=config))
     dp.add_handler(CommandHandler("set", set_timer,
                                   pass_args=True,
                                   pass_job_queue=True,
