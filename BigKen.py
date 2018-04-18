@@ -41,8 +41,10 @@ def tempReply(bot, update, temperature):
         message = "A wee bit nippy"
     elif temperature < 15:
         message = "Not too bad"
-    else:
+    elif temperature < 20:
         message = "Taps-aff"
+    else:
+        message = "Big bag of cans in a park"
     message += ' ({})'.format(temperature)
     update.message.reply_text(message)
 
