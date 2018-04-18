@@ -105,6 +105,16 @@ def strudel(bot, update, job_queue, chat_data): #custom message needs to be set
     strudel_time = ["45"]
     set_timer(bot, update, strudel_time, job_queue, chat_data)
 
+
+def tfllinestatus(bot, update, args, arguments):
+    req = requests.get("https://api.tfl.gov.uk/Line/Mode/tube/Status?app_id={}&app_key={}".format(config['tfl']['app_id'],config['tfl']['api_key']))
+    stringPrinter = ""
+    for i in range(0, 10):
+        tempString = ("{} - {}".format(req.json()[i]['name'], req.json()[i]['lineStatuses'][0]['statusSeverityDescription']))
+        stringPrinter += tempString + "\n"
+
+    update.message.reply_text(stringPrinter)
+
 def main(config):
     """Run bot."""
     updater = Updater(config['telegram']['api_key'])
@@ -117,6 +127,7 @@ def main(config):
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(ArgumentHandler("weather", weatherDarkSky, pass_args=True, arguments=config))
     dp.add_handler(CommandHandler("help", help))
+    dp.add_handler(ArgumentHandler("tube", tfllinestatus, pass_args=True, arguments=config))
     dp.add_handler(CommandHandler("set", set_timer,
                                   pass_args=True,
                                   pass_job_queue=True,
