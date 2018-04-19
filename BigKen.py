@@ -7,7 +7,7 @@ import yaml
 import sys
 import os
 
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import Updater, CommandHandler, Job
 from handler import ArgumentHandler
 
 
@@ -26,9 +26,9 @@ def help(bot, update):
                                 "\n /strudel to set a strudel timer")
 
 
-def alarm(bot, job, message = "THE TIME IS UP!!!"):
+def alarm(bot, job):
     logger.info("Called alarm")
-    bot.send_message(job.context, text = message)
+    bot.send_message(job.context, text = "Time elapsed")
 
 
 def tempReply(bot, update, temperature):
@@ -120,6 +120,7 @@ def tflLineStatus(bot, update, args, arguments):
         stringPrinter += tempString + "\n"
 
     update.message.reply_text(stringPrinter)
+
 
 def main(config):
     """Run bot."""
