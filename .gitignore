@@ -2,3 +2,5 @@ config.yaml
 .idea/
 __pycache__/
 tester.py
+picard
+worf

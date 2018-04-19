@@ -3,6 +3,7 @@
 import logging
 import requests
 import argparse
+import random
 import yaml
 import sys
 import os
@@ -73,7 +74,7 @@ def set_timer(bot, update, args, job_queue, chat_data):
     chat_id = update.message.chat_id
     try:
         # args[0] should contain the time for the timer in seconds
-        due = int(args[0]) * 60 #minutes into seconds
+        due = int(float(args[0]) * 60) #minutes into seconds
         if due < 0:
             update.message.reply_text('Sorry we can not go back to future!')
             return
@@ -121,6 +122,18 @@ def tflLineStatus(bot, update, args, arguments):
 
     update.message.reply_text(stringPrinter)
 
+def picard(bot, update):
+    # Mr Worf! Load picard
+    picard_strings = open('picard', 'r').readlines()
+    lineno = random.randint(0, len(picard_strings)-1)
+    update.message.reply_text(picard_strings[lineno])
+
+def mrworf(bot, update):
+    # Mr Worf!
+    worf_strings = open('worf', 'r').readlines()
+    lineno = random.randint(0, len(worf_strings)-1)
+    update.message.reply_text(worf_strings[lineno])
+
 
 def main(config):
     """Run bot."""
@@ -144,6 +157,8 @@ def main(config):
                                   pass_chat_data=True
                                   ))
     dp.add_handler(CommandHandler("unset", unset, pass_chat_data=True))
+    dp.add_handler(CommandHandler('picard', picard))
+    dp.add_handler(CommandHandler('mrworf', mrworf))
 
     # log all errors
     dp.add_error_handler(error)
