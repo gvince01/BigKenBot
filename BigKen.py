@@ -3,6 +3,7 @@
 import logging
 import requests
 import argparse
+import datetime
 import random
 import yaml
 import sys
@@ -11,10 +12,26 @@ import os
 from telegram.ext import Updater, CommandHandler, Job
 from handler import ArgumentHandler
 
+# Daily start
+start_daily = True
+time = datetime.datetime.today()
 
 def start(bot, update):
     logger.info("Called start")
     update.message.reply_text("YES YES YES BOYS")
+
+def update_start_daily(bot, update):
+    # Check start_daily and flip it if the day changes
+    global time
+    if time.day != datetime.datetime.today().day:
+        start_daily = True
+    time = datetime.datetime.today()
+
+def check_start(bot, update):
+    global start_daily
+    if start_daily:
+        start(bot, update)
+        start_daily = False
 
 def help(bot, update):
     logger.info("Called help")
@@ -26,13 +43,13 @@ def help(bot, update):
                                 "\n /tube status of all underground tube lines"
                                 "\n /strudel to set a strudel timer")
 
-
 def alarm(bot, job):
     logger.info("Called alarm")
     bot.send_message(job.context, text = "Time elapsed")
 
 
 def tempReply(bot, update, temperature):
+    check_start(bot, update)
     logger.info("Called tempReply")
     if temperature < 0:
         message = "Fuck it's cold boys"
@@ -51,6 +68,7 @@ def tempReply(bot, update, temperature):
 
 
 def weatherDarkSky(bot, update, args, arguments):
+    check_start(bot, update)
     logger.info("Sending weather message")
     req = requests.get("https://api.darksky.net/forecast/{}/{},{}".format(config['darksky']['api_key'], config['lat'], config['lon']))
     temp = int((req.json()['currently']['temperature'] - 32) * 5/9) #maybe put this in a function
@@ -69,6 +87,7 @@ def weatherDarkSky(bot, update, args, arguments):
 
 
 def set_timer(bot, update, args, job_queue, chat_data):
+    check_start(bot, update)
     logger.info("Called set_timer")
     """Add a job to the queue."""
     chat_id = update.message.chat_id
@@ -89,6 +108,7 @@ def set_timer(bot, update, args, job_queue, chat_data):
 
 
 def unset(bot, update, chat_data):
+    check_start(bot, update)
     logger.info("Called unset")
     """Remove the job if the user changed their mind."""
     if 'job' not in chat_data:
@@ -108,11 +128,13 @@ def error(bot, update, error):
 
 
 def strudel(bot, update, job_queue, chat_data): #custom message needs to be set
+    check_start(bot, update)
     strudel_time = ["45"]
     set_timer(bot, update, strudel_time, job_queue, chat_data)
 
 
 def tflLineStatus(bot, update, args, arguments):
+    check_start(bot, update)
     logger.info("Called TFL Line Status")
     req = requests.get("https://api.tfl.gov.uk/Line/Mode/tube/Status?app_id={}&app_key={}".format(config['tfl']['app_id'],config['tfl']['api_key']))
     stringPrinter = ""
@@ -123,12 +145,14 @@ def tflLineStatus(bot, update, args, arguments):
     update.message.reply_text(stringPrinter)
 
 def picard(bot, update):
+    check_start(bot, update)
     # Mr Worf! Load picard
     picard_strings = open('picard', 'r').readlines()
     lineno = random.randint(0, len(picard_strings)-1)
     update.message.reply_text(picard_strings[lineno])
 
 def mrworf(bot, update):
+    check_start(bot, update)
     # Mr Worf!
     worf_strings = open('worf', 'r').readlines()
     lineno = random.randint(0, len(worf_strings)-1)
@@ -141,6 +165,12 @@ def main(config):
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
+
+    # Get the job queue
+    jq = updater.job_queue
+
+    # Add starting job to check time
+    jq.run_repeating(update_start_daily, interval=60, first=0)
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
