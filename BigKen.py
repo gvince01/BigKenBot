@@ -85,6 +85,10 @@ def weatherDarkSky(bot, update, args, arguments):
         logger.error("Something went wrong while getting the weather")
         print(e)
 
+def take_the_bins_out_lads(bot, job):
+    logger.info("Called take_the_bins_out_lads")
+    bot.send_message(chat_id=job.context['vip_chat_id'], text='BINS BINS BINS BOYS')
+
 
 def set_timer(bot, update, args, job_queue, chat_data):
     check_start(bot, update)
@@ -171,6 +175,9 @@ def main(config):
 
     # Add starting job to check time
     jq.run_repeating(update_start_daily, interval=60, first=0)
+
+    # Take the bins out lads
+    jq.run_daily(take_the_bins_out_lads, datetime.time(21, 00), days=(1, 1), context=config)
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
