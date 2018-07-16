@@ -89,6 +89,9 @@ def take_the_bins_out_lads(bot, job):
     logger.info("Called take_the_bins_out_lads")
     bot.send_message(chat_id=job.context['vip_chat_id'], text='BINS BINS BINS BOYS')
 
+def water_me_please_lads(bot, job):
+    logger.info("Called water_me_please_lads")
+    bot.send_message(chat_id=job.context['vip_chat_id'], text="I'm awfully parched lads, could you get me a pint? (of water)")
 
 def set_timer(bot, update, args, job_queue, chat_data):
     check_start(bot, update)
@@ -178,6 +181,9 @@ def main(config):
 
     # Take the bins out lads
     jq.run_daily(take_the_bins_out_lads, datetime.time(21, 00), days=(1, 1), context=config)
+
+    # Water me please lads
+    jq.run_daily(water_me_please_lads, datetime.time(19, 00), days=(2, 7), context=config)
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
