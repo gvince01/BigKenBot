@@ -183,7 +183,7 @@ def main(config):
     jq.run_daily(take_the_bins_out_lads, datetime.time(21, 00), days=(1, 1), context=config)
 
     # Water me please lads
-    jq.run_daily(water_me_please_lads, datetime.time(19, 00), days=(2, 7), context=config)
+    jq.run_daily(water_me_please_lads, datetime.time(19, 00), days=(2, 6), context=config)
 
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
