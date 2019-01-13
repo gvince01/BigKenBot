@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import json
 import logging
 import requests
 import argparse
@@ -166,6 +166,41 @@ def mrworf(bot, update):
     update.message.reply_text(worf_strings[lineno])
 
 
+def gifSearch(bot, update, args):
+    check_start(bot, update)
+    logger.info("Called gif_search")
+    chat_id = update.message.chat_id
+
+    logger.info("Starting gif search")
+
+    try:
+        # Want to get all the arguments
+        searchString = " ".join(args)
+        numberOfResults = config['tenor']['num_results']
+
+        r = requests.get(
+            "https://api.tenor.com/v1/search?q={}&locale=en_GB&key={}&limit={}&anon_id={}"
+                .format(searchString, config['tenor']['api_key'], numberOfResults, config['tenor']['anon_id'])
+        )
+
+        if r.status_code == 200:
+            gifSearchResult = json.loads(r.content)
+            # get a different gif each time
+            result = random.randint(0, numberOfResults - 1)
+            url = gifSearchResult['results'][result]['media'][0]['gif']['url']
+            logger.info("Result from search {}: {}".format(searchString, url))
+            update.message.reply_text(url)
+
+        else:
+            update.message.reply_text("Hmm... Something went wrong here")
+            logger.error("Status code != 200 {}".format(r.status_code))
+
+    except (IndexError, ValueError):
+        logger.error("Error! {}, {}".format(IndexError, ValueError))
+        update.message.reply_text('Usage: /gif <search>')
+
+
+
 def main(config):
     """Run bot."""
     updater = Updater(config['telegram']['api_key'])
@@ -202,6 +237,11 @@ def main(config):
     dp.add_handler(CommandHandler("unset", unset, pass_chat_data=True))
     dp.add_handler(CommandHandler('picard', picard))
     dp.add_handler(CommandHandler('mrworf', mrworf))
+    dp.add_handler(CommandHandler("gif", gifSearch,
+                                  pass_args=True,
+                                  pass_job_queue=True,
+                                  pass_chat_data=True
+                                  ))
 
     # log all errors
     dp.add_error_handler(error)
@@ -230,10 +270,11 @@ if __name__ == '__main__':
         level = logging.INFO
 
     logger = logging.getLogger('bigken')
-    hdlr = logging.FileHandler('/var/log/bigken.log')
+    hdlr = logging.FileHandler('/var/tmp/bigken.log')
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
     hdlr.setFormatter(formatter)
     logger.addHandler(hdlr)
+    logger.setLevel(logging.INFO)
 
     if os.path.exists(args.config):
         with open(args.config, 'r') as ymlfile:
