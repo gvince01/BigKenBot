@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import json
 import logging
 import requests
 import argparse
@@ -196,11 +195,10 @@ def gifSearch(bot, update, args):
             )
 
             if r.status_code == 200:
-                gifSearchResult = json.loads(r.content)
+                gifSearchResult = r.json()['results']
                 # get a different gif each time
-                gifs = gifSearchResult['results']
-                result = random.randint(0, len(gifs) - 1)
-                url = gifs[result]['media'][0]['gif']['url']
+                result = random.randint(0, len(gifSearchResult) - 1)
+                url = gifSearchResult[result]['media'][0]['gif']['url']
                 logger.info("Result from search {}: {}".format(searchString, url))
                 update.message.reply_text(url)
 
