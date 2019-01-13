@@ -176,24 +176,28 @@ def gifSearch(bot, update, args):
     try:
         # Want to get all the arguments
         searchString = " ".join(args)
-        numberOfResults = config['tenor']['num_results']
+        if searchString != "":
+            numberOfResults = config['tenor']['num_results']
 
-        r = requests.get(
-            "https://api.tenor.com/v1/search?q={}&locale=en_GB&key={}&limit={}&anon_id={}"
+            r = requests.get(
+                "https://api.tenor.com/v1/search?q={}&locale=en_GB&key={}&limit={}&anon_id={}"
                 .format(searchString, config['tenor']['api_key'], numberOfResults, config['tenor']['anon_id'])
-        )
+            )
 
-        if r.status_code == 200:
-            gifSearchResult = json.loads(r.content)
-            # get a different gif each time
-            result = random.randint(0, numberOfResults - 1)
-            url = gifSearchResult['results'][result]['media'][0]['gif']['url']
-            logger.info("Result from search {}: {}".format(searchString, url))
-            update.message.reply_text(url)
+            if r.status_code == 200:
+                gifSearchResult = json.loads(r.content)
+                # get a different gif each time
+                result = random.randint(0, numberOfResults - 1)
+                url = gifSearchResult['results'][result]['media'][0]['gif']['url']
+                logger.info("Result from search {}: {}".format(searchString, url))
+                update.message.reply_text(url)
+
+            else:
+                update.message.reply_text("Hmm... Something went wrong here")
+                logger.error("Status code != 200 {}".format(r.status_code))
 
         else:
-            update.message.reply_text("Hmm... Something went wrong here")
-            logger.error("Status code != 200 {}".format(r.status_code))
+            update.message.reply_text("What shall I search for?")
 
     except (IndexError, ValueError):
         logger.error("Error! {}, {}".format(IndexError, ValueError))
