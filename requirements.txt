@@ -1,4 +1,4 @@
-telegram
+telegram==0.0.1
 requests
-python-telegram-bot
+python-telegram-bot==10.1.0
 pyyaml
