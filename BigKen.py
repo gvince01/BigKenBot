@@ -113,6 +113,21 @@ def set_timer(bot, update, args, job_queue, chat_data):
     except (IndexError, ValueError):
         update.message.reply_text('Usage: /set <minutes>')
 
+def news(bot, update, args, arguments):
+    check_start(bot, update)
+    logger.info("Called news, %s", args)
+    """ Do some news search """
+    news_data = requests.get('https://newsapi.org/v2/top-headlines?country=gb&apiKey={}'.format(config['news_api_key']))
+    logger.info(news_data)
+    if news_data['status'] == 'ok':
+        articles = news_data['articles']
+        for article in articles:
+            if ' '.join(args) in article['title'].lower() or ' '.join(args) in article['description'].lower():
+                update.message.reply_text(article['url'])
+    else:
+        update.message.reply_text("Bad news data received: {}".format(news_data['status']))
+    logger.info("Done")
+
 
 def unset(bot, update, chat_data):
     check_start(bot, update)
@@ -228,6 +243,7 @@ def main(config):
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(ArgumentHandler("weather", weatherDarkSky, pass_args=True, arguments=config))
+    dp.add_handler(ArgumentHandler("news", news, pass_args=True, arguments=config))
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(ArgumentHandler("tube", tflLineStatus, pass_args=True, arguments=config))
     dp.add_handler(CommandHandler("set", set_timer,
@@ -247,6 +263,7 @@ def main(config):
                                   pass_job_queue=True,
                                   pass_chat_data=True
                                   ))
+    dp.add_handler(CommandHandler('brexit', news))
 
     # log all errors
     dp.add_error_handler(error)
@@ -280,6 +297,12 @@ if __name__ == '__main__':
     hdlr.setFormatter(formatter)
     logger.addHandler(hdlr)
     logger.setLevel(logging.INFO)
+
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+        logging.getLogger('requests').setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
 
     if os.path.exists(args.config):
         with open(args.config, 'r') as ymlfile:
