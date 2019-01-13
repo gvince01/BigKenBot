@@ -177,11 +177,12 @@ def gifSearch(bot, update, args):
         # Want to get all the arguments
         searchString = " ".join(args)
         if searchString != "":
-            numberOfResults = config['tenor']['num_results']
+            tenorConfig = config['tenor']
+            numberOfResults = tenorConfig['num_results']
 
             r = requests.get(
                 "https://api.tenor.com/v1/search?q={}&locale=en_GB&key={}&limit={}&anon_id={}"
-                .format(searchString, config['tenor']['api_key'], numberOfResults, config['tenor']['anon_id'])
+                .format(searchString, tenorConfig['api_key'], numberOfResults, tenorConfig['anon_id'])
             )
 
             if r.status_code == 200:
