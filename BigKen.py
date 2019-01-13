@@ -166,6 +166,7 @@ def mrworf(bot, update):
     update.message.reply_text(worf_strings[lineno])
 
 
+
 def main(config):
     """Run bot."""
     updater = Updater(config['telegram']['api_key'])
@@ -230,6 +231,8 @@ if __name__ == '__main__':
         level = logging.INFO
 
     logger = logging.getLogger('bigken')
+    hdlr = logging.FileHandler('/var/log/bigken.log')
+    logger.addHandler(hdlr)
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=level)
 
     if os.path.exists(args.config):
