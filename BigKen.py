@@ -182,10 +182,6 @@ def mrworf(bot, update):
 def gifSearch(bot, update, args):
     check_start(bot, update)
     logger.info("Called gif_search")
-    chat_id = update.message.chat_id
-
-    logger.info("Starting gif search")
-
     try:
         # Want to get all the arguments
         searchString = " ".join(args)
@@ -193,8 +189,9 @@ def gifSearch(bot, update, args):
             tenorConfig = config['tenor']
             numberOfResults = tenorConfig['num_results']
 
+
             r = requests.get(
-                "https://api.tenor.com/v1/search?q={}&locale=en_GB&key={}&limit={}&anon_id={}"
+                "https://api.tenor.com/v1/search?q={}&locale=en_Gb&key={}&limit={}&anon_id={}"
                 .format(searchString, tenorConfig['api_key'], numberOfResults, tenorConfig['anon_id'])
             )
 
@@ -256,11 +253,7 @@ def main(config):
     dp.add_handler(CommandHandler("unset", unset, pass_chat_data=True))
     dp.add_handler(CommandHandler('picard', picard))
     dp.add_handler(CommandHandler('mrworf', mrworf))
-    dp.add_handler(CommandHandler("gif", gifSearch,
-                                  pass_args=True,
-                                  pass_job_queue=True,
-                                  pass_chat_data=True
-                                  ))
+    dp.add_handler(CommandHandler("gif", gifSearch, pass_args=True))
     dp.add_handler(CommandHandler('brexit', news))
 
     # log all errors
@@ -290,7 +283,7 @@ if __name__ == '__main__':
     else:
         level = logging.INFO
 
-    logger = logging.getLogger('bigken')
+    logger = logging.getLogger()
     if args.stdout:
         hdlr = logging.StreamHandler(sys.stdout)
     else:
@@ -298,7 +291,6 @@ if __name__ == '__main__':
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
     hdlr.setFormatter(formatter)
     logger.addHandler(hdlr)
-    logger.setLevel(logging.INFO)
 
     if args.debug:
         logger.setLevel(logging.DEBUG)
