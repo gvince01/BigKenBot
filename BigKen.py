@@ -198,8 +198,9 @@ def gifSearch(bot, update, args):
             if r.status_code == 200:
                 gifSearchResult = json.loads(r.content)
                 # get a different gif each time
-                result = random.randint(0, numberOfResults - 1)
-                url = gifSearchResult['results'][result]['media'][0]['gif']['url']
+                gifs = gifSearchResult['results']
+                result = random.randint(0, len(gifs) - 1)
+                url = gifs[result]['media'][0]['gif']['url']
                 logger.info("Result from search {}: {}".format(searchString, url))
                 update.message.reply_text(url)
 
