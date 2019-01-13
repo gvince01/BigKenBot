@@ -231,11 +231,9 @@ if __name__ == '__main__':
 
     logger = logging.getLogger('bigken')
     hdlr = logging.FileHandler('/var/log/bigken.log')
-    logger.addHandler(hdlr)
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
     hdlr.setFormatter(formatter)
-
-
+    logger.addHandler(hdlr)
 
     if os.path.exists(args.config):
         with open(args.config, 'r') as ymlfile:
