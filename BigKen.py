@@ -116,17 +116,15 @@ def set_timer(bot, update, args, job_queue, chat_data):
 def news(bot, update, args, arguments):
     check_start(bot, update)
     logger.info("Called news, %s", args)
-    """ Do some news search """
-    news_data = requests.get('https://newsapi.org/v2/top-headlines?country=gb&apiKey={}'.format(config['news_api_key']))
-    logger.info(news_data)
+    news_data = requests.get('https://newsapi.org/v2/everything?q={}&apiKey={}'.format(' '.join(args), config['news_api'])).json()
     if news_data['status'] == 'ok':
         articles = news_data['articles']
         for article in articles:
-            if ' '.join(args) in article['title'].lower() or ' '.join(args) in article['description'].lower():
-                update.message.reply_text(article['url'])
+            update.message.reply_text(article['url'])
+            return
+        update.message.reply_text('No articles found :(')
     else:
         update.message.reply_text("Bad news data received: {}".format(news_data['status']))
-    logger.info("Done")
 
 
 def unset(bot, update, chat_data):
@@ -266,7 +264,7 @@ def main(config):
     dp.add_handler(CommandHandler('brexit', news))
 
     # log all errors
-    dp.add_error_handler(error)
+    #dp.add_error_handler(error)
 
     # Start the Bot
     updater.start_polling()
@@ -282,6 +280,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--debug", action='store_true', help='Debug')
+    parser.add_argument("--stdout", action='store_true', help='Log to stdout')
     parser.add_argument("--config", help="Config file to read", default='config.yaml')
 
     args = parser.parse_args()
@@ -292,7 +291,10 @@ if __name__ == '__main__':
         level = logging.INFO
 
     logger = logging.getLogger('bigken')
-    hdlr = logging.FileHandler('/var/tmp/bigken.log')
+    if args.stdout:
+        hdlr = logging.StreamHandler(sys.stdout)
+    else:
+        hdlr = logging.FileHandler('/var/tmp/bigken.log')
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
     hdlr.setFormatter(formatter)
     logger.addHandler(hdlr)
