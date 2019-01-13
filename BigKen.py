@@ -198,7 +198,7 @@ def gifSearch(bot, update, args):
                 gifSearchResult = r.json()['results']
                 # get a different gif each time
                 result = random.randint(0, len(gifSearchResult) - 1)
-                url = gifSearchResult[result]['media'][0]['gif']['url']
+                url = gifSearchResult[result]['media'][0]['mediumgif']['url']
                 logger.info("Result from search {}: {}".format(searchString, url))
                 update.message.reply_text(url)
 
