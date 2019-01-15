@@ -214,6 +214,23 @@ def gifSearch(bot, update, args):
         update.message.reply_text('Usage: /gif <search>')
 
 
+def trumpQuote(bot, update):
+    check_start(bot, update)
+    logger.info("Starting trump quote")
+    r = requests.get("https://api.tronalddump.io/random/quote")
+
+    try:
+        if r.status_code -- 200:
+            quote = r.json()['value']
+            update.message.reply_text(quote)
+
+    except:
+        logger.error("trumpQuote: Error!")
+        update.message.reply_text("Something went wrong")
+
+
+
+
 
 def main(config):
     """Run bot."""
@@ -254,6 +271,7 @@ def main(config):
     dp.add_handler(CommandHandler('mrworf', mrworf))
     dp.add_handler(CommandHandler("gif", gifSearch, pass_args=True))
     dp.add_handler(CommandHandler('brexit', news))
+    dp.add_handler(CommandHandler('trump', trumpQuote))
 
     # log all errors
     #dp.add_error_handler(error)
