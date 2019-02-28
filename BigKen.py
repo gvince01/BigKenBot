@@ -196,11 +196,16 @@ def gifSearch(bot, update, args):
 
             if r.status_code == 200:
                 gifSearchResult = r.json()['results']
-                # get a different gif each time
-                result = random.randint(0, len(gifSearchResult) - 1)
-                url = gifSearchResult[result]['media'][0]['mediumgif']['url']
-                logger.info("Result from search {}: {}".format(searchString, url))
-                update.message.reply_text(url)
+
+                if len(gifSearchResult) > 0:
+                    # get a different gif each time
+                    result = random.randint(0, len(gifSearchResult) - 1)
+                    url = gifSearchResult[result]['media'][0]['mediumgif']['url']
+                    logger.info("Result from search {}: {}".format(searchString, url))
+                    update.message.reply_text(url)
+
+                else:
+                    update.message.reply_text("Fooking hell can't find anything for that mate")
 
             else:
                 update.message.reply_text("Hmm... Something went wrong here")
