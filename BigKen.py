@@ -339,7 +339,7 @@ def main(config):
     dp.add_handler(CommandHandler("gif", gifSearch, pass_args=True))
     dp.add_handler(CommandHandler('brexit', news))
     dp.add_handler(CommandHandler('trump', trumpQuote))
-    dp.add_handler(CommandHandler('air', airQuality))
+    dp.add_handler(CommandHandler('air', airQualityHelper, pass_args=True))
 
     # log all errors
     # dp.add_error_handler(error)
