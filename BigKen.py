@@ -253,14 +253,17 @@ def airQualityHelper(bot, update, args):
         "josh": [("51.445164", "-0.124387"), ("51.461200", "-0.115769"), ("51.481423","-0.111118")]
     }
 
-    name = args[0]
 
     airQuality(bot, update, config['lat'], config['lon'])
 
-    if name in nameToCoordinatesList:
-        coordinatesList = nameToCoordinatesList[name]
-        for coordinates in coordinatesList:
-            airQuality(bot, update, coordinates[0], coordinatesList[1])
+    if (len(args) > 0):
+        name = args[0].lower()
+
+        if name in nameToCoordinatesList:
+            coordinatesList = nameToCoordinatesList[name]
+            logger.info("airQualityHelper: For {} have {}".format(name, coordinatesList))
+            for coordinates in coordinatesList:
+                airQuality(bot, update, coordinates[0], coordinatesList[1])
 
 
 def airQuality(bot, update, lat, lon):
