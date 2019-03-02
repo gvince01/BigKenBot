@@ -250,11 +250,10 @@ def airQualityHelper(bot, update, args):
     logger.info("airQualityHelper: Starting airQuality")
 
     nameToCoordinatesList = {
-        "josh": [("51.445164", "-0.124387"), ("51.461200", "-0.115769"), ("51.481423","-0.111118")]
+        "josh": [("Streatham Hill", "51.445164", "-0.124387"), ("Brixton", "51.461200", "-0.115769"), ("Oval","51.481423","-0.111118")]
     }
 
-
-    airQuality(bot, update, config['lat'], config['lon'])
+    airQuality(bot, update, "Home", config['lat'], config['lon'])
 
     if (len(args) > 0):
         name = args[0].lower()
@@ -263,10 +262,10 @@ def airQualityHelper(bot, update, args):
             coordinatesList = nameToCoordinatesList[name]
             logger.info("airQualityHelper: For {} have {}".format(name, coordinatesList))
             for coordinates in coordinatesList:
-                airQuality(bot, update, coordinates[0], coordinates[1])
+                airQuality(bot, update, coordinates[0], coordinates[1], coordinates[2])
 
 
-def airQuality(bot, update, lat, lon):
+def airQuality(bot, update, locationName, lat, lon):
     indexToDesc = {
         "1": "Low",
         "2": "Low",
@@ -284,7 +283,7 @@ def airQuality(bot, update, lat, lon):
 
     if req.status_code == 200:
         try :
-            output = ''
+            output = '{}:/n'.format(locationName)
             pointResult = req.json()['PointResult']
 
             for key in pointResult:
