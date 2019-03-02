@@ -283,7 +283,7 @@ def airQuality(bot, update, locationName, lat, lon):
 
     if req.status_code == 200:
         try :
-            output = '{}:/n'.format(locationName)
+            output = '{}:\n'.format(locationName)
             pointResult = req.json()['PointResult']
 
             for key in pointResult:
