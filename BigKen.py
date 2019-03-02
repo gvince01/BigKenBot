@@ -15,9 +15,11 @@ from handler import ArgumentHandler
 start_daily = True
 time = datetime.datetime.today()
 
+
 def start(bot, update):
     logger.info("Called start")
     update.message.reply_text("YES YES YES BOYS")
+
 
 def update_start_daily(bot, update):
     # Check start_daily and flip it if the day changes
@@ -26,25 +28,28 @@ def update_start_daily(bot, update):
         start_daily = True
     time = datetime.datetime.today()
 
+
 def check_start(bot, update):
     global start_daily
     if start_daily:
         start(bot, update)
         start_daily = False
 
+
 def help(bot, update):
     logger.info("Called help")
     update.message.reply_text("The commands I currently support are the following:"
-                                "\n /set <mintues> creates an alarm. "
-                                "\n /unset - deletes the alarm"
-                                "\n /weather - lets you know what the weather will be like tomorrow + % chance of rain"
-                                "\n /weather temp - tells you the current temperature"
-                                "\n /tube status of all underground tube lines"
-                                "\n /strudel to set a strudel timer")
+                              "\n /set <mintues> creates an alarm. "
+                              "\n /unset - deletes the alarm"
+                              "\n /weather - lets you know what the weather will be like tomorrow + % chance of rain"
+                              "\n /weather temp - tells you the current temperature"
+                              "\n /tube status of all underground tube lines"
+                              "\n /strudel to set a strudel timer")
+
 
 def alarm(bot, job):
     logger.info("Called alarm")
-    bot.send_message(job.context, text = "Time elapsed")
+    bot.send_message(job.context, text="Time elapsed")
 
 
 def tempReply(bot, update, temperature):
@@ -70,7 +75,7 @@ def weatherDarkSky(bot, update, args, arguments):
     check_start(bot, update)
     logger.info("Sending weather message")
     req = requests.get("https://api.darksky.net/forecast/{}/{},{}".format(config['darksky']['api_key'], config['lat'], config['lon']))
-    temp = int((req.json()['currently']['temperature'] - 32) * 5/9) #maybe put this in a function
+    temp = int((req.json()['currently']['temperature'] - 32) * 5 / 9)  # maybe put this in a function
     hourlySummary = req.json()['minutely']['summary']
     hourlySummary += " {}% chance of rain.".format(req.json()['minutely']['data'][0]['precipProbability'] * 100)
     try:
@@ -84,13 +89,16 @@ def weatherDarkSky(bot, update, args, arguments):
         logger.error("Something went wrong while getting the weather")
         print(e)
 
+
 def take_the_bins_out_lads(bot, job):
     logger.info("Called take_the_bins_out_lads")
     bot.send_message(chat_id=job.context['vip_chat_id'], text='BINS BINS BINS BOYS')
 
+
 def water_me_please_lads(bot, job):
     logger.info("Called water_me_please_lads")
     bot.send_message(chat_id=job.context['vip_chat_id'], text="I'm awfully parched lads, could you get me a pint? (of water)")
+
 
 def set_timer(bot, update, args, job_queue, chat_data):
     check_start(bot, update)
@@ -99,7 +107,7 @@ def set_timer(bot, update, args, job_queue, chat_data):
     chat_id = update.message.chat_id
     try:
         # args[0] should contain the time for the timer in seconds
-        due = int(float(args[0]) * 60) #minutes into seconds
+        due = int(float(args[0]) * 60)  # minutes into seconds
         if due < 0:
             update.message.reply_text('Sorry we can not go back to future!')
             return
@@ -111,6 +119,7 @@ def set_timer(bot, update, args, job_queue, chat_data):
 
     except (IndexError, ValueError):
         update.message.reply_text('Usage: /set <minutes>')
+
 
 def news(bot, update, args, arguments):
     check_start(bot, update)
@@ -146,7 +155,7 @@ def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"', update, error)
 
 
-def strudel(bot, update, job_queue, chat_data): #custom message needs to be set
+def strudel(bot, update, job_queue, chat_data):  # custom message needs to be set
     check_start(bot, update)
     strudel_time = ["45"]
     set_timer(bot, update, strudel_time, job_queue, chat_data)
@@ -155,7 +164,7 @@ def strudel(bot, update, job_queue, chat_data): #custom message needs to be set
 def tflLineStatus(bot, update, args, arguments):
     check_start(bot, update)
     logger.info("Called TFL Line Status")
-    req = requests.get("https://api.tfl.gov.uk/Line/Mode/tube/Status?app_id={}&app_key={}".format(config['tfl']['app_id'],config['tfl']['api_key']))
+    req = requests.get("https://api.tfl.gov.uk/Line/Mode/tube/Status?app_id={}&app_key={}".format(config['tfl']['app_id'], config['tfl']['api_key']))
     stringPrinter = ""
     for i in range(0, 10):
         tempString = ("{} - {}".format(req.json()[i]['name'], req.json()[i]['lineStatuses'][0]['statusSeverityDescription']))
@@ -163,18 +172,20 @@ def tflLineStatus(bot, update, args, arguments):
 
     update.message.reply_text(stringPrinter)
 
+
 def picard(bot, update):
     check_start(bot, update)
     # Mr Worf! Load picard
     picard_strings = open('picard', 'r').readlines()
-    lineno = random.randint(0, len(picard_strings)-1)
+    lineno = random.randint(0, len(picard_strings) - 1)
     update.message.reply_text(picard_strings[lineno])
+
 
 def mrworf(bot, update):
     check_start(bot, update)
     # Mr Worf!
     worf_strings = open('worf', 'r').readlines()
-    lineno = random.randint(0, len(worf_strings)-1)
+    lineno = random.randint(0, len(worf_strings) - 1)
     update.message.reply_text(worf_strings[lineno])
 
 
@@ -187,7 +198,6 @@ def gifSearch(bot, update, args):
         if searchString != "":
             tenorConfig = config['tenor']
             numberOfResults = tenorConfig['num_results']
-
 
             r = requests.get(
                 "https://api.tenor.com/v1/search?q={}&locale=en_Gb&key={}&limit={}&anon_id={}"
@@ -225,7 +235,7 @@ def trumpQuote(bot, update):
     r = requests.get("https://api.tronalddump.io/random/quote")
 
     try:
-        if r.status_code -- 200:
+        if r.status_code - - 200:
             quote = r.json()['value']
             update.message.reply_text(quote)
 
@@ -233,6 +243,46 @@ def trumpQuote(bot, update):
         logger.error("trumpQuote: Error!")
         update.message.reply_text("Something went wrong")
 
+
+
+def airQuality(bot, update):
+    check_start(bot, update)
+    logger.info("airQuality: Starting airQuality")
+
+    indexToDesc = {
+        "1":"Low",
+        "2":"Low",
+        "3":"Low",
+        "4":"Moderate",
+        "5":"Moderate",
+        "6":"Moderate",
+        "7":"High",
+        "8":"High",
+        "9":"High",
+        "10":"Very High"
+    }
+
+    req = requests.get("http://api.erg.kcl.ac.uk/AirQuality/Data/Nowcast/lat={}/lon={}/Json".format(config['lat'], config['lon']))
+
+    if req.status_code == 200:
+        try :
+            output = ''
+            pointResult = req.json()['PointResult']
+
+            for key in pointResult:
+                if "Index" in key:
+                    value = indexToDesc[pointResult[key]]
+
+                    keyWithoutAt = key[1:]
+                    keySanitised = keyWithoutAt.replace("_Index", "")
+                    outStr = "{}: {}".format(keySanitised, value)
+                    output += outStr
+                    output += '\n'
+
+            update.message.reply_text(output)
+
+        except:
+            update.message.reply_text("Something went wrong...")
 
 
 
@@ -277,9 +327,10 @@ def main(config):
     dp.add_handler(CommandHandler("gif", gifSearch, pass_args=True))
     dp.add_handler(CommandHandler('brexit', news))
     dp.add_handler(CommandHandler('trump', trumpQuote))
+    dp.add_handler(CommandHandler('air', airQuality))
 
     # log all errors
-    #dp.add_error_handler(error)
+    # dp.add_error_handler(error)
 
     # Start the Bot
     updater.start_polling()
