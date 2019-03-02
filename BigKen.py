@@ -263,7 +263,7 @@ def airQualityHelper(bot, update, args):
             coordinatesList = nameToCoordinatesList[name]
             logger.info("airQualityHelper: For {} have {}".format(name, coordinatesList))
             for coordinates in coordinatesList:
-                airQuality(bot, update, coordinates[0], coordinatesList[1])
+                airQuality(bot, update, coordinates[0], coordinates[1])
 
 
 def airQuality(bot, update, lat, lon):
