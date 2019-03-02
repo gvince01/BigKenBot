@@ -245,24 +245,39 @@ def trumpQuote(bot, update):
 
 
 
-def airQuality(bot, update):
+def airQualityHelper(bot, update, args):
     check_start(bot, update)
-    logger.info("airQuality: Starting airQuality")
+    logger.info("airQualityHelper: Starting airQuality")
 
-    indexToDesc = {
-        "1":"Low",
-        "2":"Low",
-        "3":"Low",
-        "4":"Moderate",
-        "5":"Moderate",
-        "6":"Moderate",
-        "7":"High",
-        "8":"High",
-        "9":"High",
-        "10":"Very High"
+    nameToCoordinatesList = {
+        "josh": [("51.445164", "-0.124387"), ("51.461200", "-0.115769"), ("51.481423","-0.111118")]
     }
 
-    req = requests.get("http://api.erg.kcl.ac.uk/AirQuality/Data/Nowcast/lat={}/lon={}/Json".format(config['lat'], config['lon']))
+    name = args[0]
+
+    airQuality(bot, update, config['lat'], config['lon'])
+
+    if name in nameToCoordinatesList:
+        coordinatesList = nameToCoordinatesList[name]
+        for coordinates in coordinatesList:
+            airQuality(bot, update, coordinates[0], coordinatesList[1])
+
+
+def airQuality(bot, update, lat, lon):
+    indexToDesc = {
+        "1": "Low",
+        "2": "Low",
+        "3": "Low",
+        "4": "Moderate",
+        "5": "Moderate",
+        "6": "Moderate",
+        "7": "High",
+        "8": "High",
+        "9": "High",
+        "10": "Very High"
+    }
+
+    req = requests.get("http://api.erg.kcl.ac.uk/AirQuality/Data/Nowcast/lat={}/lon={}/Json".format(lat, lon))
 
     if req.status_code == 200:
         try :
@@ -283,9 +298,6 @@ def airQuality(bot, update):
 
         except:
             update.message.reply_text("Something went wrong...")
-
-
-
 
 def main(config):
     """Run bot."""
